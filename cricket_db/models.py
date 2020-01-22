@@ -31,7 +31,8 @@ class Player(Base):
 
 class Umpire(Base):
     __tablename__ = 'umpires'
-    name = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True,autoincrement=True)
+    name = Column(String,unique=True)
 
     def __repr__(self):
         return "<Umpire(name='%s')>" % (self.name)
@@ -60,10 +61,10 @@ class Match(Base):
     player_of_match = Column(String, ForeignKey('players.name'))
     toss_won_by = Column(String, ForeignKey('teams.name'))
     toss_decision = Column(String)
-    umpire_first = Column(String, ForeignKey('umpires.name'))
-    umpire_second = Column(String, ForeignKey('umpires.name'))
-    umpire_third = Column(String, ForeignKey('umpires.name'))
-    umpire_forth = Column(String, ForeignKey('umpires.name'))
+    umpire_first = Column(String, ForeignKey('umpires.id'))
+    umpire_second = Column(String, ForeignKey('umpires.id'))
+    umpire_third = Column(String, ForeignKey('umpires.id'))
+    umpire_forth = Column(String, ForeignKey('umpires.id'))
 
     team_home_relationship = relationship('Team', foreign_keys=[team_home])
     team_away_relationship = relationship('Team', foreign_keys=[team_away])
