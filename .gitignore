@@ -1,8 +1,11 @@
-data/
 .vscode
 .ipynb_checkpoints
 .DS_Store
 *.ipynb
+*.db
 export/
 __pycache__
 docs/
+venv/
+.idea/
+data/
