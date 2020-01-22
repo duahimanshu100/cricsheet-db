@@ -19,5 +19,5 @@ class WicketParser(Parser):
         }
         if 'fielders' in raw:
             ensure_list = lambda x: [x] if not isinstance(x, list) else x
-            wicket.update({'fielder_name': ensure_list(raw['fielders']['fielder'])[0]})
+            wicket.update({'fielder_name': ensure_list(raw['fielders'])[0]})
         return wicket

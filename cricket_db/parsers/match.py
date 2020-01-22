@@ -13,7 +13,7 @@ class MatchParser(Parser):
         data.update(self.metadata_parser.parse(raw))
         data.update(self.outcome_parser.parse(raw['outcome']))
         if 'umpires' in raw:
-            data.update(self.umpire_parser.parse(raw['umpires']['umpire']))
+            data.update(self.umpire_parser.parse(raw['umpires']))
         return data
 
 
@@ -23,10 +23,10 @@ class MatchMetadataParser(Parser):
 
     def parse(self, metadata):
         if 'player_of_match' in metadata:
-            if type(metadata['player_of_match']['player_of_match']) == list:
-                player_of_match = metadata['player_of_match']['player_of_match'][0]
+            if type(metadata['player_of_match']) == list:
+                player_of_match = metadata['player_of_match'][0]
             else:
-                player_of_match = metadata['player_of_match']['player_of_match']
+                player_of_match = metadata['player_of_match']
         else:
             player_of_match = None
         return {
@@ -36,10 +36,10 @@ class MatchMetadataParser(Parser):
             'max_overs': metadata['overs'] if 'overs' in metadata else None,
             'venue': metadata['venue'] if 'venue' in metadata else None,
             'city': metadata['city'] if 'city' in metadata else None,
-            'start_date': metadata['dates']['date'][0],
-            'end_date': metadata['dates']['date'][-1],
-            'team_home': metadata['teams']['team'][0],
-            'team_away': metadata['teams']['team'][1],
+            'start_date': metadata['dates'][0],
+            'end_date': metadata['dates'][-1],
+            'team_home': metadata['teams'][0],
+            'team_away': metadata['teams'][1],
             'player_of_match': player_of_match,
             'toss_won_by': metadata['toss']['winner'],
             'toss_decision': metadata['toss']['decision']
