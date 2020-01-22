@@ -6,6 +6,6 @@ cricsheet-db
 
 A tiny data model and reader for digitised historical cricket scoresheets, in honour of @cricsheet.
 
-Input: the XML-formatted scoresheets [found here](https://github.com/cricsheet/cricsheet-xml).
+Input: the Yaml scoresheets [found here](https://cricsheet.org/downloads/).
 
 Output: a sqlite database (~ 185 MB ca. May 2019).
