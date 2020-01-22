@@ -30,7 +30,7 @@ class CricsheetXMLReader(object):
             with open(file_name, 'r') as stream:
                 if file_name.startswith('data/.'):
                     continue
-                print(file_name)
+                print(f'{file_name} is being processed')
                 raw_file = stream.read()
                 try:
                     raw = yaml.safe_load(raw_file)
@@ -56,8 +56,6 @@ class CricsheetXMLReader(object):
                     over_number, ball_number = str(delivery_first_key).split('.')[0], str(delivery_first_key).split('.')[1]
                     delivery_parser = DeliveryParser(match_id, innings_number, over_number, ball_number)
                     objects.append(Delivery(**delivery_parser.parse(delivery[delivery_first_key])))
-                    print(delivery)
-                    print(delivery[delivery_first_key])
                     if 'wicket' in delivery[delivery_first_key]:
                         for wicket in ENSURE_LIST(delivery[delivery_first_key]['wicket']):
                             wicket_parser = WicketParser(match_id, innings_number, over_number, ball_number)
