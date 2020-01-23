@@ -7,7 +7,8 @@ Base = declarative_base()
 
 class Team(Base):
     __tablename__ = 'teams'
-    name = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True)
 
     def __repr__(self):
         return "<Team(name='%s')>" % (self.name)
@@ -15,7 +16,8 @@ class Team(Base):
 
 class Competition(Base):
     __tablename__ = 'competitions'
-    name = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True)
 
     def __repr__(self):
         return "<Competition(name='%s')>" % (self.name)
@@ -23,7 +25,8 @@ class Competition(Base):
 
 class Player(Base):
     __tablename__ = 'players'
-    name = Column(String, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True)
 
     def __repr__(self):
         return "<Player(name='%s')>" % (self.name)
@@ -31,8 +34,8 @@ class Player(Base):
 
 class Umpire(Base):
     __tablename__ = 'umpires'
-    id = Column(Integer, primary_key=True,autoincrement=True)
-    name = Column(String,unique=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String, unique=True)
 
     def __repr__(self):
         return "<Umpire(name='%s')>" % (self.name)
@@ -44,27 +47,27 @@ class Match(Base):
     id = Column(Integer, primary_key=True)
     gender = Column(String, nullable=False)
     match_type = Column(String, nullable=False)
-    competition = Column(String, ForeignKey('competitions.name'))
+    competition = Column(Integer, ForeignKey('competitions.id'))
     max_overs = Column(Integer)
     venue = Column(String)
     city = Column(String)
     start_date = Column(String, nullable=False)
     end_date = Column(String, nullable=False)
 
-    team_home = Column(String, ForeignKey('teams.name'), nullable=False)
-    team_away = Column(String, ForeignKey('teams.name'), nullable=False)
+    team_home = Column(Integer, ForeignKey('teams.id'), nullable=False)
+    team_away = Column(Integer, ForeignKey('teams.id'), nullable=False)
     result = Column(String, nullable=False)
     method = Column(String)
-    winner = Column(String, ForeignKey('teams.name'))
+    winner = Column(Integer, ForeignKey('teams.id'))
     won_by_type = Column(String)
     won_by_value = Column(Integer)
-    player_of_match = Column(String, ForeignKey('players.name'))
-    toss_won_by = Column(String, ForeignKey('teams.name'))
+    player_of_match = Column(Integer, ForeignKey('players.id'))
+    toss_won_by = Column(Integer, ForeignKey('teams.id'))
     toss_decision = Column(String)
-    umpire_first = Column(String, ForeignKey('umpires.id'))
-    umpire_second = Column(String, ForeignKey('umpires.id'))
-    umpire_third = Column(String, ForeignKey('umpires.id'))
-    umpire_forth = Column(String, ForeignKey('umpires.id'))
+    umpire_first = Column(Integer, ForeignKey('umpires.id'))
+    umpire_second = Column(Integer, ForeignKey('umpires.id'))
+    umpire_third = Column(Integer, ForeignKey('umpires.id'))
+    umpire_forth = Column(Integer, ForeignKey('umpires.id'))
 
     team_home_relationship = relationship('Team', foreign_keys=[team_home])
     team_away_relationship = relationship('Team', foreign_keys=[team_away])
