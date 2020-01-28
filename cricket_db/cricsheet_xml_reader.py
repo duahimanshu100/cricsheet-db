@@ -60,7 +60,6 @@ class CricsheetXMLReader(object):
 
             for delivery in ENSURE_LIST(innings[innings_number]['deliveries']):
                 delivery_first_key = CricsheetXMLReader.first_key_dict(delivery)
-
                 over_number, ball_number = str(delivery_first_key).split('.')[0], str(delivery_first_key).split('.')[1]
                 delivery_parser = DeliveryParser(match_id, innings_number, over_number, ball_number)
                 objects.append(Delivery(**delivery_parser.parse(delivery[delivery_first_key])))

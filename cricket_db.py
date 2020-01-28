@@ -60,7 +60,7 @@ class DumpCricketDB:
             if isinstance(object, Match):
                 match = MatchPreprocessObjects(object, self.session)
                 match.process()
-                lst_modified_objects.append(match.match)
+                lst_modified_objects.append(match.obj)
         self.session.bulk_save_objects(lst_modified_objects)
         self.session.commit()
 
@@ -70,7 +70,7 @@ class DumpCricketDB:
             if isinstance(object, Innings):
                 innings = InningsPreprocessObjects(object, self.session)
                 innings.process()
-                lst_modified_objects.append(innings.innings)
+                lst_modified_objects.append(innings.obj)
         self.session.bulk_save_objects(lst_modified_objects)
         self.session.commit()
 
@@ -80,16 +80,29 @@ class DumpCricketDB:
             if isinstance(object, Delivery):
                 delivery = DeliveryPreprocessObjects(object, self.session)
                 delivery.process()
-                lst_modified_objects.append(delivery.delivery)
-        self.session.bulk_save_objects(lst_modified_objects)
-        self.session.commit()
+                lst_modified_objects.append(delivery.obj)
+                try:
+                    self.session.add(delivery.obj)
+                    self.session.commit()
+                except Exception as e:
+                    print(e, self.session.rollback())
 
 
-class MatchPreprocessObjects:
-    def __init__(self, match, session):
-        self.match = match
+class AbstractPreprocessObjects:
+
+    def __init__(self, obj, session):
+        self.obj = obj
         self.session = session
         self.lst_objects = []
+
+    @abc.abstractmethod
+    def process(self):
+        """ process the object """
+
+        return
+
+
+class MatchPreprocessObjects(AbstractPreprocessObjects):
 
     def process(self):
         self.process_competition()
@@ -104,94 +117,86 @@ class MatchPreprocessObjects:
         self.process_umpire_forth()
 
     def process_competition(self):
-        kwargs = {"name": self.match.competition}
+        kwargs = {"name": self.obj.competition}
         competition, created = Utils.get_or_create(self.session, Competition, **kwargs)
-        self.match.competition = competition.id
+        self.obj.competition = competition.id
         self.lst_objects.append(competition)
 
     def process_team_home(self):
-        kwargs = {"name": self.match.team_home}
+        kwargs = {"name": self.obj.team_home}
         team, created = Utils.get_or_create(self.session, Team, **kwargs)
-        self.match.team_home = team.id
+        self.obj.team_home = team.id
         self.lst_objects.append(team)
 
     def process_team_away(self):
-        kwargs = {"name": self.match.team_away}
+        kwargs = {"name": self.obj.team_away}
         team, created = Utils.get_or_create(self.session, Team, **kwargs)
-        self.match.team_away = team.id
+        self.obj.team_away = team.id
         self.lst_objects.append(team)
 
     def process_winner(self):
-        kwargs = {"name": self.match.winner}
+        kwargs = {"name": self.obj.winner}
         team, created = Utils.get_or_create(self.session, Team, **kwargs)
-        self.match.winner = team.id
+        self.obj.winner = team.id
         self.lst_objects.append(team)
 
     def process_player_of_match(self):
-        kwargs = {"name": self.match.player_of_match}
+        kwargs = {"name": self.obj.player_of_match}
         player_of_match, created = Utils.get_or_create(self.session, Player, **kwargs)
-        self.match.player_of_match = player_of_match.id
+        self.obj.player_of_match = player_of_match.id
         self.lst_objects.append(player_of_match)
 
     def process_toss_won_by(self):
-        kwargs = {"name": self.match.toss_won_by}
+        kwargs = {"name": self.obj.toss_won_by}
         toss_won_by, created = Utils.get_or_create(self.session, Team, **kwargs)
-        self.match.toss_won_by = toss_won_by.id
+        self.obj.toss_won_by = toss_won_by.id
         self.lst_objects.append(toss_won_by)
 
     def process_umpire_first(self):
-        kwargs = {"name": self.match.umpire_first}
+        kwargs = {"name": self.obj.umpire_first}
         umpire_first, created = Utils.get_or_create(self.session, Umpire, **kwargs)
-        self.match.umpire_first = umpire_first.id
+        self.obj.umpire_first = umpire_first.id
         self.lst_objects.append(umpire_first)
 
     def process_umpire_second(self):
-        kwargs = {"name": self.match.umpire_second}
+        kwargs = {"name": self.obj.umpire_second}
         umpire_second, created = Utils.get_or_create(self.session, Umpire, **kwargs)
-        self.match.umpire_second = umpire_second.id
+        self.obj.umpire_second = umpire_second.id
         self.lst_objects.append(umpire_second)
 
     def process_umpire_third(self):
-        kwargs = {"name": self.match.umpire_third}
+        kwargs = {"name": self.obj.umpire_third}
         umpire_third, created = Utils.get_or_create(self.session, Umpire, **kwargs)
-        self.match.umpire_third = umpire_third.id
+        self.obj.umpire_third = umpire_third.id
         self.lst_objects.append(umpire_third)
 
     def process_umpire_forth(self):
-        kwargs = {"name": self.match.umpire_forth}
+        kwargs = {"name": self.obj.umpire_forth}
         umpire_forth, created = Utils.get_or_create(self.session, Umpire, **kwargs)
-        self.match.umpire_forth = umpire_forth.id
+        self.obj.umpire_forth = umpire_forth.id
         self.lst_objects.append(umpire_forth)
 
 
-class InningsPreprocessObjects:
-    def __init__(self, innings, session):
-        self.innings = innings
-        self.session = session
-        self.lst_objects = []
+class InningsPreprocessObjects(AbstractPreprocessObjects):
 
     def process(self):
         self.process_batting_team()
         self.process_match()
 
     def process_batting_team(self):
-        kwargs = {"name": self.innings.batting_team}
+        kwargs = {"name": self.obj.batting_team}
         batting_team, created = Utils.get_or_create(self.session, Team, **kwargs)
-        self.innings.batting_team = batting_team.id
+        self.obj.batting_team = batting_team.id
         self.lst_objects.append(batting_team)
 
     def process_match(self):
-        kwargs = {"id": self.innings.match}
+        kwargs = {"id": self.obj.match}
         match, created = Utils.get_or_create(self.session, Match, **kwargs)
-        self.innings.match = match.id
+        self.obj.match = match.id
         self.lst_objects.append(match)
 
 
-class DeliveryPreprocessObjects:
-    def __init__(self, delivery, session):
-        self.delivery = delivery
-        self.session = session
-        self.lst_objects = []
+class DeliveryPreprocessObjects(AbstractPreprocessObjects):
 
     def process(self):
         self.process_batsman()
@@ -200,26 +205,27 @@ class DeliveryPreprocessObjects:
         self.process_inning_number()
 
     def process_batsman(self):
-        kwargs = {"name": self.delivery.batsman}
+        kwargs = {"name": self.obj.batsman}
         batsman, created = Utils.get_or_create(self.session, Player, **kwargs)
-        self.delivery.batsman = batsman.id
+        self.obj.batsman = batsman.id
         self.lst_objects.append(batsman)
 
     def process_bowler(self):
-        kwargs = {"name": self.delivery.bowler}
+        kwargs = {"name": self.obj.bowler}
         bowler, created = Utils.get_or_create(self.session, Player, **kwargs)
-        self.delivery.bowler = bowler.id
+        self.obj.bowler = bowler.id
         self.lst_objects.append(bowler)
 
     def process_non_striker(self):
-        kwargs = {"name": self.delivery.non_striker}
+        kwargs = {"name": self.obj.non_striker}
         non_striker, created = Utils.get_or_create(self.session, Player, **kwargs)
-        self.delivery.non_striker = non_striker.id
+        self.obj.non_striker = non_striker.id
         self.lst_objects.append(non_striker)
 
     def process_inning_number(self):
-        self.delivery.innings = self.session.query(Innings).filter_by(match=self.delivery.match,
-                                                                      innings_number=self.delivery.innings).first().id
+        self.obj.innings = self.session. \
+            query(Innings).filter_by(match=self.obj.match,
+                                     innings_number=self.obj.innings).first().id
 
 
 if __name__ == '__main__':
