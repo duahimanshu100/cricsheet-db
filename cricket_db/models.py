@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, Numeric, String, Boolean, ForeignKey, PrimaryKeyConstraint, ForeignKeyConstraint
+from sqlalchemy import Column, Integer, Numeric, String, Boolean, ForeignKey, PrimaryKeyConstraint, \
+    ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
@@ -44,7 +45,7 @@ class Umpire(Base):
 class Match(Base):
     __tablename__ = 'matches'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     gender = Column(String, nullable=False)
     match_type = Column(String, nullable=False)
     competition = Column(Integer, ForeignKey('competitions.id'))
@@ -102,12 +103,16 @@ class Scoresheet(Base):
 class Innings(Base):
     __tablename__ = 'innings'
 
-    match_id = Column(Integer, ForeignKey('matches.id'), primary_key=True)
-    innings_number = Column(Integer, primary_key=True)
-    batting_team = Column(String, ForeignKey('teams.name'), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    match = Column(Integer, ForeignKey('matches.id'))
+    innings_number = Column(String)
+    batting_team = Column(Integer, ForeignKey('teams.id'), nullable=False)
     penalty_runs_pre = Column(Integer)
     penalty_runs_post = Column(Integer)
     was_declared = Column(Boolean)
+
+    __table_args__ = (UniqueConstraint('match', 'innings_number', name='_match_id_innings_number_uc'),
+                      )
 
     matches = relationship('Match')
     teams = relationship('Team')
@@ -120,13 +125,14 @@ class Innings(Base):
 class Delivery(Base):
     __tablename__ = 'deliveries'
 
-    match_id = Column(Integer, primary_key=True)
-    innings_number = Column(Integer, primary_key=True)
-    over_number = Column(Integer, primary_key=True)
-    ball_number = Column(Integer, primary_key=True)
-    batsman_name = Column(String, ForeignKey('players.name'), nullable=False)
-    bowler_name = Column(String, ForeignKey('players.name'), nullable=False)
-    non_striker_name = Column(String, ForeignKey('players.name'), nullable=False)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    match = Column(Integer, ForeignKey('matches.id'), nullable=False)
+    innings = Column(Integer, ForeignKey('innings.id'), nullable=False)
+    over_number = Column(Integer)
+    ball_number = Column(Integer)
+    batsman = Column(Integer, ForeignKey('players.id'), nullable=False)
+    bowler = Column(Integer, ForeignKey('players.id'), nullable=False)
+    non_striker = Column(Integer, ForeignKey('players.id'), nullable=False)
     runs_batsman = Column(Integer, nullable=False)
     was_boundary = Column(Boolean, default=0)
     runs_extras = Column(Integer, nullable=False)
@@ -134,13 +140,10 @@ class Delivery(Base):
     runs_total = Column(Integer, nullable=False)
     has_wicket = Column(Boolean, default=0)
 
-    innings = relationship('Innings', foreign_keys=[match_id, innings_number])
-    batsman = relationship('Player', foreign_keys=[batsman_name])
-    bowler = relationship('Player', foreign_keys=[bowler_name])
-    non_striker = relationship('Player', foreign_keys=[non_striker_name])
+    all_innings = relationship('Innings', foreign_keys=[innings])
 
     __table_args__ = (
-        ForeignKeyConstraint(['match_id', 'innings_number'], ['innings.match_id', 'innings.innings_number']),
+        UniqueConstraint('match', 'innings', 'over_number', 'ball_number', name='_delivery_uc'),
     )
 
     def __repr__(self):
@@ -160,16 +163,10 @@ class Wicket(Base):
     player_out_name = Column(String, ForeignKey('players.name'), nullable=False)
     fielder_name = Column(String, ForeignKey('players.name'))
 
-    delivery = relationship('Delivery', foreign_keys=[match_id, innings_number, over_number, ball_number])
-    player_out = relationship('Player', foreign_keys=[player_out_name])
-    fielder = relationship('Player', foreign_keys=[fielder_name])
+    # delivery = relationship('Delivery', foreign_keys=[match_id, innings_number, over_number, ball_number])
+    # player_out = relationship('Player', foreign_keys=[player_out_name])
+    # fielder = relationship('Player', foreign_keys=[fielder_name])
 
-    __table_args__ = (
-        ForeignKeyConstraint(
-            ['match_id', 'innings_number', 'over_number', 'ball_number'],
-            ['deliveries.match_id', 'deliveries.innings_number', 'deliveries.over_number', 'deliveries.ball_number']
-        ),
-    )
 
     def __repr__(self):
         return "<Wicket(player_out='%s', kind='%s')>" % (
