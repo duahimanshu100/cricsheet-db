@@ -5,6 +5,7 @@ cricsheet-db
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/berianjames/cricsheet-db/blob/master/LICENSE)
 
 A tiny data model and reader for digitised historical cricket scoresheets, in honour of @cricsheet.
+Load data from yaml to RDBMS(Postgres)
 
 Input: the Yaml scoresheets [found here](https://cricsheet.org/downloads/).
 
