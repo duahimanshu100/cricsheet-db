@@ -1,7 +1,7 @@
 import abc
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from cricket_db.models import Base, Match, Competition, Team, Player, Umpire
+from cricket_db.models import Base, Match, Competition, Team, Player, Umpire, Delivery, Innings
 from cricket_db.cricsheet_xml_reader import CricsheetXMLReader
 from cricket_db.utils import Utils
 
@@ -43,33 +43,46 @@ class DumpCricketDB:
     def dump_data_from_directory(self, dir_path='data'):
         reader = CricsheetXMLReader()
         lst_objects = reader.get_lst_objects_from_directory(dir_path)
-        lst_objects = PreprocessObjects(lst_objects, self.session).modify_lst_objects_process()
-        self.session.bulk_save_objects(lst_objects)
-        self.session.commit()
-        self.session.close()
+        self.dump_match(lst_objects)
+        self.dump_innings(lst_objects)
+        self.dump_deliveries(lst_objects)
 
     def dump_data_from_file(self, file_name):
         reader = CricsheetXMLReader()
         lst_objects = reader.get_lst_objects_from_file(file_name)
-        lst_objects = PreprocessObjects(lst_objects).modify_lst_objects_process()
         self.session.bulk_save_objects(lst_objects)
         self.session.commit()
         self.session.close()
 
-
-class PreprocessObjects:
-    def __init__(self, lst_objects, session):
-        self.lst_objects = lst_objects
-        self.session = session
-
-    def modify_lst_objects_process(self):
+    def dump_match(self, lst_objects):
         lst_modified_objects = []
-        for object in self.lst_objects:
+        for object in lst_objects:
             if isinstance(object, Match):
                 match = MatchPreprocessObjects(object, self.session)
                 match.process()
                 lst_modified_objects.append(match.match)
-        return lst_modified_objects
+        self.session.bulk_save_objects(lst_modified_objects)
+        self.session.commit()
+
+    def dump_innings(self, lst_objects):
+        lst_modified_objects = []
+        for object in lst_objects:
+            if isinstance(object, Innings):
+                innings = InningsPreprocessObjects(object, self.session)
+                innings.process()
+                lst_modified_objects.append(innings.innings)
+        self.session.bulk_save_objects(lst_modified_objects)
+        self.session.commit()
+
+    def dump_deliveries(self, lst_objects):
+        lst_modified_objects = []
+        for object in lst_objects:
+            if isinstance(object, Delivery):
+                delivery = DeliveryPreprocessObjects(object, self.session)
+                delivery.process()
+                lst_modified_objects.append(delivery.delivery)
+        self.session.bulk_save_objects(lst_modified_objects)
+        self.session.commit()
 
 
 class MatchPreprocessObjects:
@@ -150,6 +163,63 @@ class MatchPreprocessObjects:
         self.match.umpire_forth = umpire_forth.id
         self.lst_objects.append(umpire_forth)
 
+
+class InningsPreprocessObjects:
+    def __init__(self, innings, session):
+        self.innings = innings
+        self.session = session
+        self.lst_objects = []
+
+    def process(self):
+        self.process_batting_team()
+        self.process_match()
+
+    def process_batting_team(self):
+        kwargs = {"name": self.innings.batting_team}
+        batting_team, created = Utils.get_or_create(self.session, Team, **kwargs)
+        self.innings.batting_team = batting_team.id
+        self.lst_objects.append(batting_team)
+
+    def process_match(self):
+        kwargs = {"id": self.innings.match}
+        match, created = Utils.get_or_create(self.session, Match, **kwargs)
+        self.innings.match = match.id
+        self.lst_objects.append(match)
+
+
+class DeliveryPreprocessObjects:
+    def __init__(self, delivery, session):
+        self.delivery = delivery
+        self.session = session
+        self.lst_objects = []
+
+    def process(self):
+        self.process_batsman()
+        self.process_bowler()
+        self.process_non_striker()
+        self.process_inning_number()
+
+    def process_batsman(self):
+        kwargs = {"name": self.delivery.batsman}
+        batsman, created = Utils.get_or_create(self.session, Player, **kwargs)
+        self.delivery.batsman = batsman.id
+        self.lst_objects.append(batsman)
+
+    def process_bowler(self):
+        kwargs = {"name": self.delivery.bowler}
+        bowler, created = Utils.get_or_create(self.session, Player, **kwargs)
+        self.delivery.bowler = bowler.id
+        self.lst_objects.append(bowler)
+
+    def process_non_striker(self):
+        kwargs = {"name": self.delivery.non_striker}
+        non_striker, created = Utils.get_or_create(self.session, Player, **kwargs)
+        self.delivery.non_striker = non_striker.id
+        self.lst_objects.append(non_striker)
+
+    def process_inning_number(self):
+        self.delivery.innings = self.session.query(Innings).filter_by(match=self.delivery.match,
+                                                                      innings_number=self.delivery.innings).first().id
 
 if __name__ == '__main__':
     # engine = SQlLiteEngine(database_name="cricsheet3.db").create_engine()
