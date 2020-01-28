@@ -221,8 +221,13 @@ class DeliveryPreprocessObjects:
         self.delivery.innings = self.session.query(Innings).filter_by(match=self.delivery.match,
                                                                       innings_number=self.delivery.innings).first().id
 
+
 if __name__ == '__main__':
     # engine = SQlLiteEngine(database_name="cricsheet3.db").create_engine()
-    engine = PostgresEngine("localhost", "cricsheet", "postgres", "password").create_engine()
+    HOST = "localhost"
+    DATABASE_NAME = "cricsheet"
+    DB_USER = "postgres"
+    PASSWORD = "password"
+    engine = PostgresEngine(HOST, DATABASE_NAME, DB_USER, PASSWORD).create_engine()
     dump_cricket_db = DumpCricketDB(engine)
     dump_cricket_db.dump_data_from_directory()

@@ -167,7 +167,6 @@ class Wicket(Base):
     # player_out = relationship('Player', foreign_keys=[player_out_name])
     # fielder = relationship('Player', foreign_keys=[fielder_name])
 
-
     def __repr__(self):
         return "<Wicket(player_out='%s', kind='%s')>" % (
             self.batsman_name, self.kind)
