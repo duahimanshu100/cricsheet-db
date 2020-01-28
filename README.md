@@ -8,4 +8,4 @@ A tiny data model and reader for digitised historical cricket scoresheets, in ho
 
 Input: the Yaml scoresheets [found here](https://cricsheet.org/downloads/).
 
-Output: a sqlite database (~ 185 MB ca. May 2019).
+Output: a sqlite or Postgres database
