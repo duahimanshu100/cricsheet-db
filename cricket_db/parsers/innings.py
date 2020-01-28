@@ -8,7 +8,7 @@ class InningsParser(Parser):
 
     def parse(self, raw):
         innings = {
-            'match_id': self.match_id,
+            'match': self.match_id,
             'innings_number': self.innings_number,
             'batting_team': raw['team'],
             'was_declared': ('declared' in raw)
