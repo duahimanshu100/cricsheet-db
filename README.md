@@ -10,3 +10,13 @@ Load data from yaml to RDBMS(Postgres)
 Input: the Yaml scoresheets [found here](https://cricsheet.org/downloads/).
 
 Output: a sqlite or Postgres database
+
+
+Execute
+============
+
+1. Run Postgres via docker --> `docker-compose -f docker/postgres/local.yml up`
+2. Create Virtualenv --> `virtualenv venv`
+3. Activate env --> `source venv/bin/activate`
+4. Add some of the yaml files from cricsheet website in data directory.
+5. Run python file
