@@ -19,4 +19,5 @@ Execute
 2. Create Virtualenv --> `virtualenv venv`
 3. Activate env --> `source venv/bin/activate`
 4. Add some of the yaml files from cricsheet website in data directory.
-5. Run python file
+5. Install requirements --> `pip install -r requirements.txt`
+6. Run python file --> `python cricket_db.py`
